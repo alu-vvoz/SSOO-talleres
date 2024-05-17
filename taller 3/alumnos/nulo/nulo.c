@@ -13,7 +13,6 @@ static ssize_t nulo_read(struct file *filp, char __user *data, size_t s, loff_t 
 static ssize_t nulo_write(struct file *filp, const char __user *data, size_t s, loff_t *off) {
   return s;
 }
-//unsigned long copy_from_user(void *to, const void __user *from, unsigned long count);
 
 static struct file_operations nulo_operaciones = {
   .owner = THIS_MODULE,
@@ -29,7 +28,7 @@ static int __init hello_init(void) {
   cdev_init(&nulo_device, &nulo_operaciones);
   alloc_chrdev_region(&major, 0, 1, "Nulo");
   cdev_add(&nulo_device, major, 1);
-  /* Completar */
+  
 	nulo_class = class_create(THIS_MODULE, "Nulo");
   device_create(nulo_class, NULL, major, NULL, "Nulo");
   
@@ -39,7 +38,6 @@ static int __init hello_init(void) {
 static void __exit hello_exit(void) {
   unregister_chrdev_region(major, 1);
   cdev_del(&nulo_device);
-  /* Completar */
   device_destroy(nulo_class, major);
   class_destroy(nulo_class);
 }

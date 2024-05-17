@@ -28,7 +28,6 @@ static ssize_t azar_write(struct file *filp, const char __user *data, size_t siz
     copy_from_user(numero, data, size);
     numero[size] = 0;
     if(kstrtoint(numero,10,&upper_bound) == 0) {
-        //if(upper_bound==0) upper_bound=-1;
         return size;
     }    
     return -EPERM;

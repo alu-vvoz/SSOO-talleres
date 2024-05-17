@@ -12,6 +12,8 @@
 
 static spinlock_t lock;
 
+unsigned int restantes = SLOT_COUNT;
+
 typedef struct user_data {
     bool valid;
     char input;
@@ -19,7 +21,16 @@ typedef struct user_data {
 
 static int letras_open(struct inode *inod, struct file *filp) {
 
-    /* Completar */
+    bool exito = true;
+    int reslocal;
+    spin_lock(&lock);
+        if(restantes == 0){
+            exito = false;
+        }else{
+            restantes--;
+        }
+    spin_unlock(&lock);
+    if(!exito) return -EPERM;
 
     filp->private_data = kmalloc(sizeof(struct user_data), GFP_KERNEL);
     ((user_data *) filp->private_data)->valid = false;
@@ -28,24 +39,39 @@ static int letras_open(struct inode *inod, struct file *filp) {
 }
 
 static int letras_release(struct inode *inod, struct file *filp) {
-
-    /* Completar */
+    kfree(filp->private_data);
+    spin_lock(&lock);
+        restantes++;
+    spin_unlock(&lock);    
 
     return 0;
 }
 
 static ssize_t letras_read(struct file *filp, char __user *data, size_t size, loff_t *offset) {
     user_data *udata = (user_data *) filp->private_data;
+    if(udata->valid){
+        char ainsertar = udata->input;
+        char cadena[size];
+        int i;
+        for(i=0; i < size; i++){
+            cadena[i] = ainsertar;
+        }
 
-    /* Completar */
-   
+        copy_to_user(data, cadena, size);
+        return size;
+    }
+    
     return -EPERM;
 }
 
 static ssize_t letras_write(struct file *filp, const char __user *data, size_t size, loff_t *offset) {
     user_data *udata = (user_data *) filp->private_data;
-
-    /* Completar */
+    char caracter[size];
+    copy_from_user(caracter, data, size);
+    if(!udata->valid){
+        udata->valid = true;
+        udata->input = caracter[0];
+    }
 
     return size;
 }
